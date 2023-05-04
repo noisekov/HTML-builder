@@ -7,6 +7,14 @@ fs.mkdir(pathToTask, { recursive: true }, (err) => {
   if (err) throw err;
 });
 
+fs.readdir(pathToTask, (_, files) => {
+  files.forEach((file) => {
+    fs.unlink(`${pathToTask}/${file}`, err => {
+      if(err) throw err;
+    });
+  })
+});
+
 fs.readdir(pathToFolder, (_, files) => {
   files.forEach((file) => {
     fs.copyFile(pathToFolder + `/${file}`, pathToTask + `/${file}`, callback);
@@ -16,4 +24,4 @@ fs.readdir(pathToFolder, (_, files) => {
       console.log(`Файл ${file} успешно скопирован в папку files-copy.`);
     }
   })
-})
+});
