@@ -16,12 +16,9 @@ fs.readdir(pathToFolderStyle, { withFileTypes:true } , (_, files) => {
   for (let prop of files) {
     const stream = new fs.ReadStream(path.join(__dirname, `/styles/${prop.name}`), 'UTF-8');
 
-    stream.on('readable', function () {
-      while ((data = this.read()) !== null) {
-        readableStream.write(data);
-      }
+    stream.on('data', (chunk) => {
+        readableStream.write(chunk);
     })
-
   }
 })
 
@@ -45,55 +42,53 @@ fs.mkdir(`${pathToFolder}/assets/svg`, { recursive: true },  err => {
 
 fs.readdir(pathToFolderAssets + '/fonts', (_, files) => {
   files.forEach(file => {
-    fs.copyFile(`${pathToFolderAssets}/fonts/${file}`, `${pathToFolder}/assets/fonts/${file}`, cb);
-
-    function cb(err) {
-      if (err) throw err;
+    const cb = (err) => {
+        if (err) throw err;
     }
+
+    fs.copyFile(`${pathToFolderAssets}/fonts/${file}`, `${pathToFolder}/assets/fonts/${file}`, cb);
   })
 })
 fs.readdir(pathToFolderAssets + '/img', (_, files) => {
   files.forEach(file => {
-    fs.copyFile(`${pathToFolderAssets}/img/${file}`, `${pathToFolder}/assets/img/${file}`, cb);
-
-    function cb(err) {
-      if (err) throw err;
+    const cb = (err) => {
+        if (err) throw err;
     }
+
+    fs.copyFile(`${pathToFolderAssets}/img/${file}`, `${pathToFolder}/assets/img/${file}`, cb);
   })
 })
 fs.readdir(pathToFolderAssets + '/svg', (_, files) => {
   files.forEach(file => {
+    const cb = (err) => {
+        if (err) throw err;
+    }
+
     fs.copyFile(`${pathToFolderAssets}/svg/${file}`, `${pathToFolder}/assets/svg/${file}`, cb);
 
-    function cb(err) {
-      if (err) throw err;
-    }
   })
 })
 
 //work with template file
-const stream = new fs.ReadStream(path.join(__dirname, `template.html`), 'UTF-8');
-const streamArticles = new fs.ReadStream(path.join(__dirname, `/components/articles.html`), 'UTF-8');
-const streamFooter = new fs.ReadStream(path.join(__dirname, `/components/footer.html`), 'UTF-8');
-const streamHeader = new fs.ReadStream(path.join(__dirname, `/components/header.html`), 'UTF-8');
+const stream = new fs.createReadStream(path.join(__dirname, `template.html`), 'UTF-8');
+let readable = fs.createWriteStream(`${pathToFolder}/index.html`, 'UTF-8');
 
-let readable = fs.createWriteStream(`${pathToFolder}/index.html`, 'utf8');
+fs.readdir(path.join(__dirname, `/components/`), (_, files) => {
+    files.forEach(file => {
+        let streamAll = new fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
 
-stream.on('readable', function () {
-  while ((data = this.read()) !== null) {
-    // data.split('\n').forEach(findComponent => {
-    //   if (findComponent.trim() === '{{articles}}') {
-    //     console.log('articles заменить тут')
-    //   }
+        console.log(`{{${file.split('.')[0]}}}`)
+        // streamAll.on('data', (chank) => {
+        //     console.log(chank);
+        // })
+    })
+});
 
-    //   if (findComponent.trim() === '{{footer}}') {
-    //     console.log('footer заменить тут')
-    //   }
+stream.on('data', (chunk) => {
+    chunk.split('\n').forEach(stringText => {
+        let findComponentinHtml = stringText.match(/{{(.*?)}}/g);
 
-    //   if (findComponent.trim() === '{{header}}') {
-    //     console.log('header заменить тут')
-    //   }
-    // })
-    readable.write(data)
-  }
-})
+        chunk = chunk.replace(findComponentinHtml, 'ТУТ ДОЛЖЕН БЫТЬ СООТВЕСТВУЮЩИЙ ХТМЛ');
+    });
+    readable.write(chunk);
+});
