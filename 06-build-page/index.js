@@ -70,25 +70,32 @@ fs.readdir(pathToFolderAssets + '/svg', (_, files) => {
 })
 
 //work with template file
-const stream = new fs.createReadStream(path.join(__dirname, `template.html`), 'UTF-8');
-let readable = fs.createWriteStream(`${pathToFolder}/index.html`, 'UTF-8');
+const readTemplate = () => {
+  const stream = fs.createReadStream(path.join(__dirname, `template.html`), 'UTF-8');
 
-fs.readdir(path.join(__dirname, `/components/`), (_, files) => {
+  let template = '';
+  return new Promise((resolve, reject) => {
+    stream.on('data', (chunk) => template += chunk.toString());
+    stream.on('end', () => resolve(template));
+    stream.on('error', (err) => reject(err));
+  })
+}
+
+const changeValueTemplate = async () => {
+  let template = await readTemplate();
+
+  fs.readdir(path.join(__dirname, `/components/`), (_, files) => {
     files.forEach(file => {
-        let streamAll = new fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
+      let streamFile = new fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
 
-        console.log(`{{${file.split('.')[0]}}}`)
-        // streamAll.on('data', (chank) => {
-        //     console.log(chank);
-        // })
+      let dataChunk = '';
+      streamFile.on('data', chunk => dataChunk += chunk);
+      streamFile.on('end', () => {
+        template = template.replace(`{{${file.split('.')[0]}}}`, dataChunk);
+        const resulFile = fs.createWriteStream(path.join(pathToFolder, `index.html`), 'UTF-8');
+        resulFile.write(template);
+      })
     })
-});
-
-stream.on('data', (chunk) => {
-    chunk.split('\n').forEach(stringText => {
-        let findComponentinHtml = stringText.match(/{{(.*?)}}/g);
-
-        chunk = chunk.replace(findComponentinHtml, 'ТУТ ДОЛЖЕН БЫТЬ СООТВЕСТВУЮЩИЙ ХТМЛ');
-    });
-    readable.write(chunk);
-});
+  })
+}
+changeValueTemplate();
