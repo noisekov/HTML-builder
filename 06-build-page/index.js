@@ -80,22 +80,26 @@ const readTemplate = () => {
 };
 
 const changeValueTemplate = async () => {
-  let template = await readTemplate();
+  try {
+    let template = await readTemplate();
 
-  fs.readdir(path.join(__dirname, '/components/'), (_, files) => {
-    files.forEach(file => {
-      const streamFile = fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
-      const currentTemplate = `{{${file.split('.')[0]}}}`;
-      const resulFile = fs.createWriteStream(path.join(pathToFolder, 'index.html'), 'UTF-8');
+    fs.readdir(path.join(__dirname, '/components/'), (_, files) => {
+      files.forEach(file => {
+        const streamRead = fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
+        const streamWrite = fs.createWriteStream(path.join(pathToFolder, 'index.html'), 'UTF-8');
+        const currentTemplate = `{{${file.split('.')[0]}}}`;
 
-      let dataChunk = '';
-      streamFile.on('data', chunk => dataChunk += chunk);
-      streamFile.on('end', () => {
-        template = template.replace(currentTemplate, dataChunk);
-        resulFile.write(template);
+        let dataChunk = '';
+        streamRead.on('data', chunk => dataChunk += chunk);
+        streamRead.on('end', () => {
+          template = template.replace(currentTemplate, dataChunk);
+          streamWrite.write(template);
+        });
       });
     });
-  });
+  } catch (err) {
+    console.log(err);
+  }
 
 };
 changeValueTemplate();
