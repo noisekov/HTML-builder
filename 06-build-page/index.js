@@ -69,10 +69,10 @@ fs.readdir(pathToFolderAssets + '/svg', (_, files) => {
 
 //work with template file
 const readTemplate = () => {
-  const stream = fs.createReadStream(path.join(__dirname, 'template.html'), 'UTF-8');
-
-  let template = '';
   return new Promise((resolve, reject) => {
+    const stream = fs.createReadStream(path.join(__dirname, 'template.html'), 'UTF-8');
+    let template = '';
+
     stream.on('data', (chunk) => template += chunk.toString());
     stream.on('end', () => resolve(template));
     stream.on('error', (err) => reject(err));
@@ -84,13 +84,14 @@ const changeValueTemplate = async () => {
 
   fs.readdir(path.join(__dirname, '/components/'), (_, files) => {
     files.forEach(file => {
-      let streamFile = new fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
+      const streamFile = fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
+      const currentTemplate = `{{${file.split('.')[0]}}}`;
+      const resulFile = fs.createWriteStream(path.join(pathToFolder, 'index.html'), 'UTF-8');
 
       let dataChunk = '';
       streamFile.on('data', chunk => dataChunk += chunk);
       streamFile.on('end', () => {
-        template = template.replace(`{{${file.split('.')[0]}}}`, dataChunk);
-        const resulFile = fs.createWriteStream(path.join(pathToFolder, 'index.html'), 'UTF-8');
+        template = template.replace(currentTemplate, dataChunk);
         resulFile.write(template);
       });
     });
