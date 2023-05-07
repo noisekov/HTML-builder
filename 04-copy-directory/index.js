@@ -4,26 +4,23 @@ const path = require('path');
 const pathToFolder = path.join(__dirname, '/files');
 const pathToTask = path.join(__dirname, 'files-copy');
 
-const copyDirectory = async () => {
-  try {
-    fs.access(pathToTask, async (isExist) => {
-      if (`${isExist ? false : true}` === 'true') {
-        await fs.promises.rm(pathToTask, { recursive: true });
-      }
-      await fs.promises.mkdir(pathToTask, { recursive: true });
+try {
+  fs.access(pathToTask, async (isExist) => {
+    if (`${isExist ? false : true}` === 'true') {
+      await fs.promises.rm(pathToTask, { recursive: true });
+    }
+    await fs.promises.mkdir(pathToTask, { recursive: true });
 
-      fs.readdir(pathToFolder, (_, files) => {
-        files.forEach((file) => {
-          const callback = (err) => {
-            if (err) throw err;
-          };
+    fs.readdir(pathToFolder, (_, files) => {
+      files.forEach((file) => {
+        const callback = (err) => {
+          if (err) throw err;
+        };
 
-          fs.copyFile(pathToFolder + `/${file}`, pathToTask + `/${file}`, callback);
-        });
+        fs.copyFile(pathToFolder + `/${file}`, pathToTask + `/${file}`, callback);
       });
     });
-  } catch (err) {
-    console.error(err);
-  }
-};
-copyDirectory();
+  });
+} catch (err) {
+  console.error(err);
+}
