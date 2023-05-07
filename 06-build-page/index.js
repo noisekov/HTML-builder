@@ -16,11 +16,9 @@ fs.readdir(pathToFolderStyle, { withFileTypes:true } , (_, files) => {
   for (let prop of files) {
     const stream = new fs.ReadStream(path.join(__dirname, `/styles/${prop.name}`), 'UTF-8');
 
-    stream.on('data', (chunk) => {
-        readableStream.write(chunk);
-    })
+    stream.on('data', (chunk) => readableStream.write(chunk));
   }
-})
+});
 
 //copy components
 fs.mkdir(path.join(pathToFolder, '/assets'), { recursive: true },  err => {
@@ -43,48 +41,48 @@ fs.mkdir(`${pathToFolder}/assets/svg`, { recursive: true },  err => {
 fs.readdir(pathToFolderAssets + '/fonts', (_, files) => {
   files.forEach(file => {
     const cb = (err) => {
-        if (err) throw err;
-    }
+      if (err) throw err;
+    };
 
     fs.copyFile(`${pathToFolderAssets}/fonts/${file}`, `${pathToFolder}/assets/fonts/${file}`, cb);
-  })
-})
+  });
+});
 fs.readdir(pathToFolderAssets + '/img', (_, files) => {
   files.forEach(file => {
     const cb = (err) => {
-        if (err) throw err;
-    }
+      if (err) throw err;
+    };
 
     fs.copyFile(`${pathToFolderAssets}/img/${file}`, `${pathToFolder}/assets/img/${file}`, cb);
-  })
-})
+  });
+});
 fs.readdir(pathToFolderAssets + '/svg', (_, files) => {
   files.forEach(file => {
     const cb = (err) => {
-        if (err) throw err;
-    }
+      if (err) throw err;
+    };
 
     fs.copyFile(`${pathToFolderAssets}/svg/${file}`, `${pathToFolder}/assets/svg/${file}`, cb);
 
-  })
-})
+  });
+});
 
 //work with template file
 const readTemplate = () => {
-  const stream = fs.createReadStream(path.join(__dirname, `template.html`), 'UTF-8');
+  const stream = fs.createReadStream(path.join(__dirname, 'template.html'), 'UTF-8');
 
   let template = '';
   return new Promise((resolve, reject) => {
     stream.on('data', (chunk) => template += chunk.toString());
     stream.on('end', () => resolve(template));
     stream.on('error', (err) => reject(err));
-  })
-}
+  });
+};
 
 const changeValueTemplate = async () => {
   let template = await readTemplate();
 
-  fs.readdir(path.join(__dirname, `/components/`), (_, files) => {
+  fs.readdir(path.join(__dirname, '/components/'), (_, files) => {
     files.forEach(file => {
       let streamFile = new fs.createReadStream(path.join(__dirname, `/components/${file}`), 'UTF-8');
 
@@ -92,10 +90,11 @@ const changeValueTemplate = async () => {
       streamFile.on('data', chunk => dataChunk += chunk);
       streamFile.on('end', () => {
         template = template.replace(`{{${file.split('.')[0]}}}`, dataChunk);
-        const resulFile = fs.createWriteStream(path.join(pathToFolder, `index.html`), 'UTF-8');
+        const resulFile = fs.createWriteStream(path.join(pathToFolder, 'index.html'), 'UTF-8');
         resulFile.write(template);
-      })
-    })
-  })
-}
+      });
+    });
+  });
+
+};
 changeValueTemplate();

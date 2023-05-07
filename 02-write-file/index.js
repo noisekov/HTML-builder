@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const file = path.join(__dirname, 'yourText.txt');
 
-let readableStream = fs.createWriteStream(file, 'utf-8');
+const readableStream = fs.createWriteStream(file, 'utf-8');
 console.log('Write your message:');
 
 process.stdin.on('data', data => {
